@@ -12,6 +12,7 @@ class DiabetesProbability(Base):
   
   id: Mapped[int] = mapped_column(primary_key=True)
   diabetes_probability:Mapped[float]
+  probability_prediction_explanation:Mapped[str]
   high_blood_pressure:Mapped[bool]
   high_blood_cholestrol:Mapped[bool]
   cholestrol_checked_in_last_5_years:Mapped[bool]
