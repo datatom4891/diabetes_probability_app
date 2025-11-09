@@ -24,13 +24,15 @@ class AgeGroupEnum(IntEnum):
   AGE_75_79 = 12
   AGE_80_99 = 13
 
+
 class EducationLevelEnum(IntEnum):
   NO_SCHOOL_OR_KINDERGARTEN_ONLY = 1
   ELEMENTARY_SCHOOL = 2
   SOME_HIGH_SCHOOL = 3
-  HIGH_GRADUATE = 4
+  HIGH_SCHOOL_GRADUATE = 4
   SOME_COLLEGE_OR_TECHNICAL_SCHOOL = 5
   COLLEGE_GRADUATE = 6
+
 
 class IncomeLevelEnum(IntEnum):
   LESS_THAN_10K = 1
@@ -40,7 +42,7 @@ class IncomeLevelEnum(IntEnum):
   LESS_THAN_35K = 5
   LESS_THAN_50K = 6
   LESS_THAN_75K = 7
-  MORE_THAN_75K = 8
+  AT_75K_OR_MORE = 8
 
 class InputRequest(BaseModel):
   high_blood_pressure: bool
