@@ -48,7 +48,7 @@ class InputRequest(BaseModel):
   high_blood_pressure: bool
   high_blood_cholestrol: bool
   cholestrol_checked_in_last_5_years: bool
-  body_mass_index: int
+  body_mass_index: float
   smoker: bool
   stroke: bool
   heart_attack_or_heart_disease: bool
