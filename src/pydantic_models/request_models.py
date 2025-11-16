@@ -66,3 +66,16 @@ class InputRequest(BaseModel):
   age: AgeGroupEnum
   education_level:EducationLevelEnum
   income: IncomeLevelEnum
+
+class InputRequestV3(BaseModel):
+    high_blood_pressure: bool
+    high_blood_cholestrol: bool
+    cholestrol_checked_in_last_5_years: bool
+    body_mass_index: float
+    stroke: bool
+    heart_attack_or_heart_disease: bool
+    heavy_drinker: bool
+    general_health_rating: GeneralHealthEnum
+    difficulty_walking:bool
+    is_male:bool
+    age: AgeGroupEnum

@@ -1,4 +1,5 @@
 import streamlit as st
+import streamlit.components.v1 as components
 from frontend_utils import submit_prediction
 
 from src.pydantic_models.request_models import GeneralHealthEnum, AgeGroupEnum, IncomeLevelEnum, EducationLevelEnum, InputRequest
@@ -12,6 +13,7 @@ probability = 0.0
 probability_response_flag = False
 probability_error_msg = None
 no_input_submitted = True
+lime_explanation_html = None
 
 boolean_options = ["Yes","No"]
 boolean_translation = {"Yes":True, "No":False}
@@ -81,69 +83,61 @@ with st.form("model_inputs"):
     high_chl = st.selectbox("Do you have High Blood Cholestrol?", boolean_options)
     cholestrol_check = st.selectbox("Have you checked your cholestrol in the last 5 years?", boolean_options)
     bmi = st.number_input("Body Mass Index")
-    smoker = st.selectbox("Have you smoked at least 100 cigarettes in your entire life?", boolean_options)
     stroke = st.selectbox("Have you ever had a stroke?", boolean_options)
     heart_disease_attack = st.selectbox("Have you ever had a Heart Attack or have a history of Heart Disease?", boolean_options)
     
-
   with col2:
-    exercise_30 = st.selectbox("Have you exercised in the past 30 Days?", boolean_options)
-    fruits = st.selectbox("Do you eat fruits 1 or more times a day?", boolean_options)
-    veggies = st.selectbox("Do you eat veggies 1 or more times a day?", boolean_options)
-    healthcare_coverage = st.selectbox("Do you have any healthcare coverage?", boolean_options)
     general_health = st.selectbox("How would you rate your general health",general_health_options)
     gender = st.selectbox("Gender",["Male","Female"])
     age_group = st.selectbox("What is your age group?", age_group_options)
+    difficulty_walking = st.selectbox("Do you have serious difficulty walking or climbing stairs?", boolean_options)
+    heavy_alcohol_consump = st.selectbox("Do you drink heavily (Men: More than 14 drinks per week. Women: More than 7 drinks per week?)", boolean_options)
     
-    
-    
-    
+    submitted = st.form_submit_button("Submit")
   
   with col3:
-    education_level = st.selectbox("Education Level", education_level_options)
-    income_level = st.selectbox("Income Level", income_level_options)
-    difficulty_walking = st.selectbox("Do you have serious difficulty walking or climbing stairs?", boolean_options)
-    mental_health = st.number_input("How many days in the last 30 days has your mental health not been good (stress, depression and emotional problems)",min_value=1,max_value=30)
-    physical_health = st.number_input("How many days in the last 30 days has your physical health not been good (physcial illness and injury)",min_value=1,max_value=30)
-    heavy_alcohol_consump = st.selectbox("Do you drink heavily (Men: More than 14 drinks per week. Women: More than 7 drinks per week?)", boolean_options)
-    unable_to_see_doc_12 = st.selectbox("In the last 12 months, did you need to see a doctor but didn't due to cost?", boolean_options)
-    
-    
-    
-  
-  submitted = st.form_submit_button("Submit")
-  
-  if submitted:
-    input_request= dict(high_blood_pressure = boolean_translation[high_bp],
-                        high_blood_cholestrol = boolean_translation[high_chl],
-                        cholestrol_checked_in_last_5_years=boolean_translation[cholestrol_check],
-                        body_mass_index=bmi, smoker=boolean_translation[smoker], stroke=boolean_translation[stroke],
-                        heart_attack_or_heart_disease=boolean_translation[heart_disease_attack],
-                        any_physical_activity_in_last30=boolean_translation[exercise_30],
-                        consume_fruits=boolean_translation[fruits], consume_veggies=boolean_translation[veggies],
-                        heavy_drinker=boolean_translation[heavy_alcohol_consump], have_health_insurance=boolean_translation[healthcare_coverage],
-                        no_dr_visit_due_to_cost=boolean_translation[unable_to_see_doc_12], general_health_rating=general_health_translation[general_health],
-                        mental_health=mental_health, physical_health=physical_health, difficulty_walking=boolean_translation[difficulty_walking],
-                        is_male=gender_translation[gender], age=age_group_translation[age_group], education_level=education_level_translations[education_level],
-                        income=income_level_translation[income_level])
-    
-    response_obj = submit_prediction(input_request)
-    if response_obj.status_code == 200:
-      response_dict = response_obj.json()
-      probability = response_dict["probability"]
-      probability_response_flag = True
-    else:
-      probability_error_msg = "An error occured, please check that your inputs are correct"
-    
-    no_input_submitted = False
+    if submitted:
+      input_request= dict(high_blood_pressure = boolean_translation[high_bp],
+                          high_blood_cholestrol = boolean_translation[high_chl],
+                          cholestrol_checked_in_last_5_years=boolean_translation[cholestrol_check],
+                          body_mass_index=bmi, 
+                          stroke=boolean_translation[stroke],
+                          heart_attack_or_heart_disease=boolean_translation[heart_disease_attack],
+                          heavy_drinker=boolean_translation[heavy_alcohol_consump],
+                          general_health_rating=general_health_translation[general_health],
+                          difficulty_walking=boolean_translation[difficulty_walking],
+                          is_male=gender_translation[gender], 
+                          age=age_group_translation[age_group])
+      
+      response_obj = submit_prediction(input_request)
+      if response_obj.status_code == 200:
+        response_dict = response_obj.json()
+        probability = response_dict["probability_str"]
+        probability_response_flag = True
+        
+        if response_dict["explanation_str"]:
+          lime_explanation_html = response_dict["explanation_str"]
+        else:
+          lime_explanation_html = None
+      else:
+        probability_error_msg = "An error occured, please check that your inputs are correct"
+      
+      
+      
+      no_input_submitted = False
         
       
 
 
-if probability_response_flag:
-  st.text(f"Your probability of being diabetic is {probability}%.")
-else:
-  if no_input_submitted:
-    st.text(f"Please enter inputs and hit submit to see a probability prediction.")
-  else:
-    st.text(f"{probability_error_msg}")
+    if probability_response_flag:
+      st.text(f"{probability}")
+      #st.markdown(lime_explanation_html, unsafe_allow_html=True)
+      components.html(lime_explanation_html, height=800)
+    else:
+      if no_input_submitted:
+        st.text(f"Please enter inputs and hit submit to see a probability prediction.")
+      else:
+        st.text(f"{probability_error_msg}")
+    
+    
+      
